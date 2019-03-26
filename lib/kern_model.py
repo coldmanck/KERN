@@ -137,16 +137,17 @@ class VRFC(nn.Module):
     """
     Module for relationship classification just using a fully connected layer.
     """
-    def __init__(self, mode, obj_rel_dim, num_rel_cls):
+    def __init__(self, mode, obj_rel_dim, num_obj_cls, num_rel_cls):
         super(VRFC, self).__init__()
-        self.obj_rel_dim = obj_rel_dim
-        self.num_rel_cls = num_rel_cls
         self.mode = mode
+        self.obj_rel_dim = obj_rel_dim
+        self.num_obj_cls = num_obj_cls
+        self.num_rel_cls = num_rel_cls
         self.vr_fc = nn.Linear(self.obj_rel_dim, self.num_rel_cls)
 
     def forward(self, obj_fmaps, obj_logits, vr, rel_inds, obj_labels=None, boxes_per_cls=None):
         if self.mode == 'predcls':
-            obj_dists2 = Variable(to_onehot(obj_labels.data, self.num_classes))
+            obj_dists2 = Variable(to_onehot(obj_labels.data, self.num_obj_cls))
         else:
             obj_dists2 = obj_logits
 
@@ -272,7 +273,7 @@ class KERN(nn.Module):
                                                  use_knowledge=use_rel_knowledge,
                                                  knowledge_matrix=rel_knowledge)
         else:
-            self.vr_fc_cls = VRFC(self.mode, self.obj_dim * 2 + self.rel_dim, len(self.rel_classes))
+            self.vr_fc_cls = VRFC(self.mode, self.obj_dim * 2 + self.rel_dim, len(self.classes), len(self.rel_classes))
 
     @property
     def num_classes(self):
